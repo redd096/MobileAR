@@ -117,7 +117,7 @@ namespace redd096
             if (string.IsNullOrEmpty(value) == false)
             {
                 currentQrValue = value;
-                debugText.text = currentQrValue;
+                if (debugText) debugText.text = currentQrValue;
                 OnFoundCorrectQR();
             }
         }
