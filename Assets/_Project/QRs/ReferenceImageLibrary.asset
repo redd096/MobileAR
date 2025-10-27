@@ -23,7 +23,7 @@ MonoBehaviour:
     m_SerializedTextureGuid:
       m_GuidLow: 18272301529448273737
       m_GuidHigh: 16538774565784287258
-    m_Size: {x: 0.15, y: 0.15}
+    m_Size: {x: 0.06, y: 0.06}
     m_SpecifySize: 1
     m_Name: Apple Pie
     m_Texture: {fileID: 2800000, guid: 23975749416efd941a78d665d78785e5, type: 3}
@@ -33,7 +33,7 @@ MonoBehaviour:
     m_SerializedTextureGuid:
       m_GuidLow: 3730120307904954034
       m_GuidHigh: 7421325800081500168
-    m_Size: {x: 0.15, y: 0.15}
+    m_Size: {x: 0.06, y: 0.06}
     m_SpecifySize: 1
     m_Name: Bread Cubic
     m_Texture: {fileID: 2800000, guid: 32253eb20ca833c408a84ccc7ed8fd66, type: 3}
@@ -43,7 +43,7 @@ MonoBehaviour:
     m_SerializedTextureGuid:
       m_GuidLow: 19363859731027704
       m_GuidHigh: 12462303284226451608
-    m_Size: {x: 0.15, y: 0.15}
+    m_Size: {x: 0.06, y: 0.06}
     m_SpecifySize: 1
     m_Name: Steak
     m_Texture: {fileID: 2800000, guid: ecbf96f8cb53004498688013cffef2ac, type: 3}

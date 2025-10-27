@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
@@ -9,6 +10,7 @@ namespace redd096
     {
         [SerializeField] ImageTrackingManager imageTrackingManager;
         [SerializeField] QRScanManager qrScanManager;
+        [SerializeField] TMP_Text debugText;
         [SerializeField] FPrefabs[] prefabs;
 
         //list of tracked images
@@ -115,6 +117,7 @@ namespace redd096
             if (string.IsNullOrEmpty(value) == false)
             {
                 currentQrValue = value;
+                debugText.text = currentQrValue;
                 OnFoundCorrectQR();
             }
         }
