@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848409ee8ba454f42a5ddff137688a27, type: 3}
+  m_Name: ReferenceImageLibrary
+  m_EditorClassIdentifier: 
+  m_GuidLow: 5485413920872844782
+  m_GuidHigh: 3527665663783018625
+  m_DataStore:
+    m_Storage: []
+  m_Images:
+  - m_SerializedGuid:
+      m_GuidLow: 5699834498311479243
+      m_GuidHigh: 18019298305803469701
+    m_SerializedTextureGuid:
+      m_GuidLow: 18272301529448273737
+      m_GuidHigh: 16538774565784287258
+    m_Size: {x: 0.15, y: 0.15}
+    m_SpecifySize: 1
+    m_Name: Apple Pie
+    m_Texture: {fileID: 2800000, guid: 23975749416efd941a78d665d78785e5, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 4691607299747647934
+      m_GuidHigh: 10801143071465638805
+    m_SerializedTextureGuid:
+      m_GuidLow: 3730120307904954034
+      m_GuidHigh: 7421325800081500168
+    m_Size: {x: 0.15, y: 0.15}
+    m_SpecifySize: 1
+    m_Name: Bread Cubic
+    m_Texture: {fileID: 2800000, guid: 32253eb20ca833c408a84ccc7ed8fd66, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 5683955328644536661
+      m_GuidHigh: 4887000280876216982
+    m_SerializedTextureGuid:
+      m_GuidLow: 19363859731027704
+      m_GuidHigh: 12462303284226451608
+    m_Size: {x: 0.15, y: 0.15}
+    m_SpecifySize: 1
+    m_Name: Steak
+    m_Texture: {fileID: 2800000, guid: ecbf96f8cb53004498688013cffef2ac, type: 3}
