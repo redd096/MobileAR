@@ -29,9 +29,8 @@ namespace redd096
             imageTrackingManager.OnUpdateImage += OnUpdateImage;
             imageTrackingManager.OnRemoveImage += OnRemoveImage;
 
-            //start qr scan
+            //register to qr events
             qrScanManager.OnFoundQR += OnFoundQR;
-            qrScanManager.StartQRScan();
         }
 
         private void OnDestroy()
@@ -41,12 +40,8 @@ namespace redd096
             imageTrackingManager.OnUpdateImage -= OnUpdateImage;
             imageTrackingManager.OnRemoveImage -= OnRemoveImage;
 
-            //stop qr scan
-            if (qrScanManager && qrScanManager.IsScanning)
-            {
+            if (qrScanManager)
                 qrScanManager.OnFoundQR -= OnFoundQR;
-                qrScanManager.StopQRScan();
-            }
         }
 
         #region events - populate trackedImages and currentQrValue

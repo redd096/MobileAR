@@ -1,117 +1,122 @@
-using System.Collections;
 using UnityEngine;
+using UnityEngine.XR.ARFoundation;
 using ZXing;
+using Unity.Collections;
+using UnityEngine.Rendering;
 
 namespace redd096
 {
     /// <summary>
-    /// This is the QRScanner by using ZXing plugin
+    /// This is the QRScanner by using ZXing plugin and AR Foundation
     /// </summary>
     public class QRScanManager : MonoBehaviour
     {
-        [Header("Debug - Use test QR instead of camera")]
-        [SerializeField] private bool useTestQr;
-        [SerializeField] private Texture2D testQr;
-
-        private WebCamTexture frontCamera;
-        private Result scannedQr;
+        [SerializeField] private ARCameraManager arCameraManager;
+        [SerializeField] private TMPro.TMP_Text debugText;
+        [SerializeField] private UnityEngine.UI.RawImage debugRawImage;
 
         /// <summary>
         /// Register to this event to know when a qr is found. Then you can call GetQRValue to get it
         /// </summary>
         public System.Action OnFoundQR { get; set; }
-        /// <summary>
-        /// It's true when call StartQRScan and false when call StopQRScan
-        /// </summary>
-        public bool IsScanning { get; set; }
 
-        /// <summary>
-        /// Play frontcamera and start coroutine to check if find some qr
-        /// </summary>
-        public void StartQRScan()
+        private BarcodeReader barcodeReader;
+        private Result scannedQr;
+        private bool isRequesting;
+
+        private void Awake()
         {
-            CheckFrontCamera();
-
-            // if (frontCamera.isPlaying == false)
-            {
-                IsScanning = true;
-                if (frontCamera) frontCamera.Play();
-                StartCoroutine(FindQRCoroutine());
-            }
+            barcodeReader = new BarcodeReader();
         }
 
-        /// <summary>
-        /// Stop frontCamera and stop coroutine
-        /// </summary>
-        public void StopQRScan()
+        void OnEnable()
         {
-            // if (frontCamera != null && frontCamera.isPlaying)
+            // Register to ar camera events
+            if (arCameraManager != null)
+                arCameraManager.frameReceived += OnCameraFrameReceived;
+        }
+
+        void OnDisable()
+        {
+            // Unregister events
+            if (arCameraManager != null)
+                arCameraManager.frameReceived -= OnCameraFrameReceived;
+        }
+
+        private async void OnCameraFrameReceived(ARCameraFrameEventArgs args)
+        {
+            if (args.textures != null && args.textures.Count > 0 && isRequesting == false)
             {
-                IsScanning = false;
-                if (frontCamera) frontCamera.Stop();
-                StopCoroutine(nameof(FindQRCoroutine));
+                isRequesting = true;
+
+                try
+                {
+                    // Get texture from AR camera
+                    Texture2D nativeTex = args.textures[0];
+
+                    // Wait GPU Reader
+                    var request = AsyncGPUReadback.Request(nativeTex, 0, TextureFormat.RGBA32);
+                    while (request.done == false)
+                        await System.Threading.Tasks.Task.Yield();
+
+                    if (request.hasError)
+                    {
+                        Debug.Log("GPU readback error detected.");
+                        if (debugText != null)
+                            debugText.text = "GPU readback error detected.";
+
+                        isRequesting = false;
+                        return;
+                    }
+
+                    // Get the data from the request
+                    NativeArray<byte> data = request.GetData<byte>();
+
+                    // Convert the byte data to Color32 array
+                    Color32[] colors = new Color32[data.Length / 4];
+                    System.Buffer.BlockCopy(data.ToArray(), 0, colors, 0, data.Length);
+
+                    // Decode the QR code
+                    var result = barcodeReader.Decode(colors, nativeTex.width, nativeTex.height);
+                    if (result != null)
+                    {
+                        scannedQr = result;
+                        OnFoundQR?.Invoke();
+
+                        if (debugText != null)
+                            debugText.text = result.Text;
+                    }
+
+                    if (debugRawImage)
+                    {
+                        debugRawImage.texture = nativeTex;
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError("Error scanning QR code: " + e.Message);
+                    if (debugText != null)
+                        debugText.text = "Error scanning QR code: " + e.Message;
+                }
+                finally
+                {
+                    isRequesting = false;
+                }
             }
         }
 
         /// <summary>
         /// Try get value
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public string GetQRValue()
         {
             if (scannedQr != null)
             {
-                return scannedQr.Text; 
+                return scannedQr.Text;
                 //scannedQr.BarcodeFormat
             }
-
             return null;
         }
-
-        #region private API
-
-        /// <summary>
-        /// Set WebCamTexture with first webcam
-        /// </summary>
-        private void CheckFrontCamera()
-        {
-            if (frontCamera == null)
-            {
-                if (WebCamTexture.devices.Length > 0)
-                    frontCamera = new WebCamTexture(WebCamTexture.devices[0].name);
-                else
-                    Debug.LogError("No front camera found.");
-            }
-        }
-
-        /// <summary>
-        /// If find qr, call event
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerator FindQRCoroutine()
-        {
-            // while (frontCamera != null && frontCamera.isPlaying)
-            while (true)
-            {
-                //use test qr or front camera
-                Color32[] pixels = useTestQr ? testQr.GetPixels32() : (frontCamera ? frontCamera.GetPixels32() : default);
-                int width = useTestQr ? testQr.width : (frontCamera ? frontCamera.width : 1);
-                int height = useTestQr ? testQr.height : (frontCamera ? frontCamera.height : 1);
-
-                //check if this is a qr
-                IBarcodeReader barcodeReader = new BarcodeReader();
-                var result = barcodeReader.Decode(pixels, width, height);
-                if (result != null)
-                {
-                    scannedQr = result;
-                    OnFoundQR?.Invoke();
-                }
-
-                yield return null;
-            }
-        }
-
-        #endregion
     }
 }
