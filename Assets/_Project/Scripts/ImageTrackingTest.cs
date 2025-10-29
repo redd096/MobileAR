@@ -169,6 +169,10 @@ namespace redd096
 
         private void OnFoundCorrectQR()
         {
+            //we already linked this qr to an image. Do nothing
+            if (qrImages.ContainsKey(currentQrValue))
+                return;
+            
 			//find an image not in dictionary
             foreach (var image in trackedImages)
             {
