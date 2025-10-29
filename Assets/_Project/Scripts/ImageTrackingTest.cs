@@ -48,9 +48,9 @@ namespace redd096
 
         private void OnAddImage(TrackableId id, ARTrackedImage image)
         {
-            // // Give the initial image a reasonable default scale
-            // float minLocalScalar = Mathf.Min(image.size.x, image.size.y) * 0.5f;
-            // image.transform.localScale = new Vector3(minLocalScalar, minLocalScalar, minLocalScalar);
+            // Give the initial image a reasonable default scale
+            float minLocalScalar = Mathf.Min(image.size.x, image.size.y) * 0.5f;
+            image.transform.localScale = new Vector3(minLocalScalar, minLocalScalar, minLocalScalar);
 
             // ARTrackableManager will instantiate an EmptyObject with ARTrackedImage script.
             // If inside ARTrackedImageManager's inspector is setted a prefab, 

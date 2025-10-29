@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
+using UnityEngine.XR.ARSubsystems;
 using ZXing;
-using Unity.Collections;
-using UnityEngine.Rendering;
+using System.Collections;
 
 namespace redd096
 {
@@ -29,80 +29,107 @@ namespace redd096
             barcodeReader = new BarcodeReader();
         }
 
-        void OnEnable()
+		void Update()
         {
-            // Register to ar camera events
-            if (arCameraManager != null)
-                arCameraManager.frameReceived += OnCameraFrameReceived;
+            AsynchronousConversion();
+		}
+
+		void AsynchronousConversion()
+        {
+            // If a conversion is already in progress, do nothing
+            if (isRequesting)
+                return;
+
+            StartCoroutine(ConvertImageAsync());
         }
 
-        void OnDisable()
+        IEnumerator ConvertImageAsync()
         {
-            // Unregister events
-            if (arCameraManager != null)
-                arCameraManager.frameReceived -= OnCameraFrameReceived;
-        }
+            isRequesting = true;
 
-        private async void OnCameraFrameReceived(ARCameraFrameEventArgs args)
-        {
-            if (args.textures != null && args.textures.Count > 0 && isRequesting == false)
+            // Acquire an XRCpuImage
+            if (arCameraManager.TryAcquireLatestCpuImage(out XRCpuImage image) == false)
             {
-                isRequesting = true;
-
-                try
-                {
-                    // Get texture from AR camera
-                    Texture2D nativeTex = args.textures[0];
-
-                    // Wait GPU Reader
-                    var request = AsyncGPUReadback.Request(nativeTex, 0, TextureFormat.RGBA32);
-                    while (request.done == false)
-                        await System.Threading.Tasks.Task.Yield();
-
-                    if (request.hasError)
-                    {
-                        Debug.Log("GPU readback error detected.");
-                        if (debugText != null)
-                            debugText.text = "GPU readback error detected.";
-
-                        isRequesting = false;
-                        return;
-                    }
-
-                    // Get the data from the request
-                    NativeArray<byte> data = request.GetData<byte>();
-
-                    // Convert the byte data to Color32 array
-                    Color32[] colors = new Color32[data.Length / 4];
-                    System.Buffer.BlockCopy(data.ToArray(), 0, colors, 0, data.Length);
-
-                    // Decode the QR code
-                    var result = barcodeReader.Decode(colors, nativeTex.width, nativeTex.height);
-                    if (result != null)
-                    {
-                        scannedQr = result;
-                        OnFoundQR?.Invoke();
-
-                        if (debugText != null)
-                            debugText.text = result.Text;
-                    }
-
-                    if (debugRawImage)
-                    {
-                        debugRawImage.texture = nativeTex;
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    Debug.LogError("Error scanning QR code: " + e.Message);
-                    if (debugText != null)
-                        debugText.text = "Error scanning QR code: " + e.Message;
-                }
-                finally
-                {
-                    isRequesting = false;
-                }
+                // If fail, break
+                isRequesting = false;
+                yield break;
             }
+
+            // Create the async conversion request
+            var request = image.ConvertAsync(new XRCpuImage.ConversionParams
+            {
+                // Use the full image
+                inputRect = new RectInt(0, 0, image.width, image.height),
+
+                // Optionally downsample by 2
+                outputDimensions = new Vector2Int(image.width / 2, image.height / 2),
+
+                // Output an RGB color image format
+                outputFormat = TextureFormat.RGB24,
+
+                // Flip across the Y axis
+                transformation = XRCpuImage.Transformation.MirrorY
+            });
+
+            // It is safe to dispose the image before the async operation completes
+            image.Dispose();
+
+            // Wait for the conversion to complete
+            while (!request.status.IsDone())
+                yield return null;
+
+            // Check status to see if the conversion completed successfully
+            if (request.status != XRCpuImage.AsyncConversionStatus.Ready)
+            {
+                // Something went wrong
+                Debug.LogErrorFormat("Request failed with status {0}", request.status);
+
+                request.Dispose();
+                isRequesting = false;
+                yield break;
+            }
+
+            // Image data is ready. Let's apply it to a Texture2D
+            var rawData = request.GetData<byte>();
+
+            Texture2D texture = new Texture2D(
+                request.conversionParams.outputDimensions.x,
+                request.conversionParams.outputDimensions.y,
+                request.conversionParams.outputFormat,
+                false);
+
+            texture.LoadRawTextureData(rawData);
+            texture.Apply();
+
+            // Dispose the request including raw data
+            request.Dispose();
+
+            // Try scan qr and save value
+            var result = barcodeReader.Decode(texture.GetPixels32(), texture.width, texture.height);
+            if (result != null)
+            {
+                scannedQr = result;
+                OnFoundQR?.Invoke();
+
+                if (debugText)
+                    debugText.text = result.Text;
+            }
+
+            // Destroy texture (or previous and this one keep for debug raw image)
+            if (debugRawImage)
+            {
+                if (debugRawImage.texture)
+                    Destroy(debugRawImage.texture);
+
+                debugRawImage.texture = texture;
+            }
+            else
+            {
+                Destroy(texture);
+            }
+
+            yield return null;
+            isRequesting = false;
         }
 
         /// <summary>
