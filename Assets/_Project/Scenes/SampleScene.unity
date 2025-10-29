@@ -8125,7 +8125,7 @@ MonoBehaviour:
   m_InteractionGroup: {fileID: 2001374502}
   m_DebugPlaneSlider: {fileID: 1154765692}
   m_PlaneManager: {fileID: 151853166}
-  m_UseARPlaneFading: 1
+  m_UseARPlaneFading: 0
   m_ARDebugMenu: {fileID: 239212526}
   m_DebugMenuSlider: {fileID: 1139628616}
   m_TapStartPositionInput:
@@ -8503,17 +8503,9 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 1621248250418106373, guid: c6a19b11b80432840a012cf44d211f9d, type: 3}
-      propertyPath: m_TrackedImagePrefab
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 2379907968152423919, guid: c6a19b11b80432840a012cf44d211f9d, type: 3}
       propertyPath: m_Name
       value: XR Origin (AR Rig)
-      objectReference: {fileID: 0}
-    - target: {fileID: 2379907968152423921, guid: c6a19b11b80432840a012cf44d211f9d, type: 3}
-      propertyPath: m_PlanePrefab
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 2379907968152423922, guid: c6a19b11b80432840a012cf44d211f9d, type: 3}
       propertyPath: m_LocalPosition.x
