@@ -105,15 +105,22 @@ namespace redd096
             request.Dispose();
 
             // Try scan qr and save value
-            var result = barcodeReader.Decode(texture.GetPixels32(), texture.width, texture.height);
-            if (result != null)
+            try
             {
-                scannedQr = result;
-                OnFoundQR?.Invoke();
+                var result = barcodeReader.Decode(texture.GetPixels32(), texture.width, texture.height);
+                if (result != null)
+                {
+                    scannedQr = result;
+                    OnFoundQR?.Invoke();
 
-                if (debugText)
-                    debugText.text = result.Text;
+                    if (debugText)
+                        debugText.text = result.Text;
+                }
             }
+            catch (System.Exception e)
+			{
+                Debug.LogError(e.Message);
+			}
 
             // Destroy texture (or previous and this one keep for debug raw image)
             if (debugRawImage)
